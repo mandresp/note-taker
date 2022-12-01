@@ -1,29 +1,49 @@
-const router = require('express').Router();
-const path = require("path");
-const { router, response } = require('../server');
-const { uuid } = require('uuidv4');
+const notes = require('express').Router();
+const path = require('path')
+const uuid = require("../helpers/uuid");
+const { readAndAppend, readFromFile, writeToFile } = require("../helpers/fsUtils");
 
-router.get("/notes", function(err, res) {
+notes.get("/notes", function(err, res) {
     readFromFile('./db/db.json').then((data) => res.json(JSON.parse(data)))
 })
 
-router.post("/notes", function(req, res) {
+notes.post("/notes", function(req, res) {
+    const database = path.join(__dirname, "../db/db.json");
     const { title, text } = req.body;
     if (title && text) {
         const newNote = {
-      title,
-      text,
-      note_id: uuid()
-    };
+            title,
+            text,
+            id: uuid()
+        };
     
-    readAndAppend(newNote, './db/db.json')
+        readAndAppend(newNote, database)
+
+        const response = {
+            status: 'success',
+            body: newNote
+        };
+
+        res.json(response);
+    } else {
+        res.json("Error");
     }
-
-    res.json(newNote);
 })
 
-router.delete("/notes/:id", function(req, res) {
-    
-})
+notes.delete("/notes/:id", (req, res) => {
+    const database = path.join(__dirname, "../db/db.json");
+    const id = req.params.id;
+    readFromFile(database)
+        .then((notes) => {
+            var parseNotes = JSON.parse(notes)
+            const notesArray = parseNotes.filter((note) => note.id !== id);
+            writeToFile(database, notesArray);
+        })
+        .then(() => {
+            res.json(`Note has been deleted`)
+        }).catch((err) => {
+            res.status(500).json(err);
+        })
+});
 
-module.export = router
+module.exports = notes
