@@ -12,10 +12,6 @@ Open index.html.
 
 After opening index.html navigate to the notes section. There you will be able to enter, view, and delete all of your notes.
 
-## Walkthrough Video
-
-![Walkthrough Video](./walkthrough.gif)
-
 ## Credits
 
 N/A
